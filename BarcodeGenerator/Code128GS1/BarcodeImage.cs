@@ -129,15 +129,60 @@ namespace BarcodeGenerator.Code128GS1
         #endregion Code patterns
 
         private const int cQuietWidth = 10;
-
         /// <summary>
         /// Make an image of a Code128 barcode for a given string
+        /// does not display the string in plaintext below barcode
         /// </summary>
         /// <param name="InputData">Message to be encoded</param>
         /// <param name="BarWeight">Base thickness for bar width (1 or 2 works well)</param>
         /// <param name="AddQuietZone">Add required horiz margins (use if output is tight)</param>
         /// <returns>An Image of the Code128 barcode representing the message</returns>
         public Image CreateImage(int[] codes, int BarWeight, bool AddQuietZone)
+        {
+            return CreateImage("", codes, BarWeight, AddQuietZone, "Arial");
+        }
+
+        /// <summary>
+        /// Make an image of a Code128 barcode for a given string
+        /// does not display the string in plaintext below barcode
+        /// </summary>
+        /// <param name="InputData">Message to be encoded</param>
+        /// <param name="BarWeight">Base thickness for bar width (1 or 2 works well)</param>
+        /// <param name="AddQuietZone">Add required horiz margins (use if output is tight)</param>
+        /// <returns>An Image of the Code128 barcode representing the message</returns>
+        public Image CreateImage(int[] codes, int BarWeight, bool AddQuietZone, String BarcodeFont)
+        {
+            return CreateImage("", codes, BarWeight, AddQuietZone, BarcodeFont);
+        }
+
+        /// <summary>
+        /// Make an image of a Code128 barcode for a given string
+        /// displays the string in plaintext below barcode, uses Arial font for the text
+        /// </summary>
+        /// <param name="text">Text to be displayed, not derived from data to eliminate start/stop bits</param>
+        /// <param name="InputData">Message to be encoded</param>
+        /// <param name="BarWeight">Base thickness for bar width (1 or 2 works well)</param>
+        /// <param name="AddQuietZone">Add required horiz margins (use if output is tight)</param>
+        /// <returns>An Image of the Code128 barcode representing the message</returns>
+        public Image CreateImage(String text, int[] codes, int BarWeight, bool AddQuietZone)
+        {
+            {
+                return CreateImage(text, codes, BarWeight, AddQuietZone, "Arial");
+            }
+
+        }
+
+        /// <summary>
+        /// Make an image of a Code128 barcode for a given string
+        /// displays the string in plaintext below barcode
+        /// </summary>
+        /// <param name="text">Text to be displayed, not derived from data to eliminate start/stop bits</param>
+        /// <param name="InputData">Message to be encoded</param>
+        /// <param name="BarWeight">Base thickness for bar width (1 or 2 works well)</param>
+        /// <param name="AddQuietZone">Add required horiz margins (use if output is tight)</param>
+        /// <param name="BarcodeFont">Font to use for text under barcode</param>
+        /// <returns>An Image of the Code128 barcode representing the message</returns>
+        public Image CreateImage(String text, int[] codes, int BarWeight, bool AddQuietZone, String BarcodeFont)
         {
             // get the Code128 codes to represent the message
             //Encoder content = new Encoder(InputData);
@@ -153,12 +198,12 @@ namespace BarcodeGenerator.Code128GS1
             }
 
             // get surface to draw on
-            Image myimg = new System.Drawing.Bitmap(width, height);
+            Image myimg = new System.Drawing.Bitmap(width, height+50);
             using (Graphics gr = Graphics.FromImage(myimg))
             {
 
                 // set to white so we don't have to fill the spaces with white
-                gr.FillRectangle(System.Drawing.Brushes.White, 0, 0, width, height);
+                gr.FillRectangle(System.Drawing.Brushes.White, 0, 0, width, height+50);
 
                 // skip quiet zone
                 int cursor = AddQuietZone ? cQuietWidth * BarWeight : 0;
@@ -184,8 +229,11 @@ namespace BarcodeGenerator.Code128GS1
 
                         // advance cursor beyond this pair
                         cursor += (barwidth + spcwidth);
+                        
                     }
                 }
+                 
+                gr.DrawString(text, new System.Drawing.Font(BarcodeFont, BarWeight*8), new System.Drawing.SolidBrush(Color.Black), (width/3), height, new System.Drawing.StringFormat());
             }
 
             return myimg;
